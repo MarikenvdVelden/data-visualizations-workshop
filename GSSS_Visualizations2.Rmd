@@ -13,7 +13,7 @@ Social scientists often work with data collected using a complex survey design. 
 
 For example, the `gss_lon data contains a small subset of measures from every wave of the GSS since its inception in 1972. It also contains several variables that describe the design of the survey and provide replicate weights for observations in various years. These technical details are described in the GSS documentation. Similar information is typically provided by other complex surveys. Here we will use this design information to calculate weighted estimates of the distribution of educational attainment by race, for selected survey years from 1976 to 2016.
 
-To begin, we load the `survey` and `srvyr` libraries.
+To begin, we load the `survey`, `srvyr`, `tidyverse`, and `socviz` libraries.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # remember, if you have not installed the packages yet, use install.packages()
@@ -43,7 +43,8 @@ The two `options` set at the beginning provide some information to the `survey` 
 out_grp <- gss_wt %>%
     filter(year %in% seq(1976, 2016, by = 4)) %>%
     group_by(year, race, degree) %>%
-    summarize(prop = survey_mean(na.rm = TRUE))
+    summarize(prop = survey_mean(na.rm = TRUE)) %>%
+    drop_na()
 ```
 
 This gives us the numbers that we want and returns them in a tidy data frame. The `interaction()` function produces variable labels that are a compound of the two variables we interacted, with each combination of categories separated by a period, (such as `White.Graduate`). However, perhaps we would like to see these categories as two separate columns, one for race and one for education, as before. Because the variable labels are organized in a predictable way, we can use one of the convenient functions in the `tidyverse`’s `tidyr` library to separate the single variable into two columns while correctly preserving the row values. Appropriately, this function is called `separate()`.
@@ -62,10 +63,9 @@ The call to `separate()` says to take the `racedeg` column, split each value whe
 Reasonable people can disagree over how best to plot a small multiple of a frequency table while faceting by year, especially when there is some measure of uncertainty attached. A barplot is the obvious approach for a single case, but when there are many years it can become difficult to compare bars across panels. This is especially the case when standard errors or confidence intervals are used in conjunction with bars. This is sometimes called a _dynamite plot_, not because it looks amazing but because the t-shaped error bars on the tops of the columns make them look like cartoon dynamite plungers. An alternative is to use a line graph to join up the time observations, faceting on educational categories instead of year. 
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height = 12}
-library(ggplot2)
 dodge <- position_dodge(width=0.9)
 
-(p <- ggplot(data = subset(out_grp, race %nin% "Other"),
+ggplot(data = subset(out_grp, race %nin% "Other"),
             mapping = aes(x = degree, y = prop,
                           ymin = prop - 2*prop_se,
                           ymax = prop + 2*prop_se,
@@ -85,7 +85,7 @@ dodge <- position_dodge(width=0.9)
          x = NULL, y = "Percent") +
     facet_wrap(~ year, ncol = 2) +
     theme_bw() +
-    theme(legend.position = "top"))
+    theme(legend.position = "top")
 ```
 
 This plot has a few cosmetic details and adjustments that you can look up in Healy's book (Chapter 8). **Try to replicate the plot by peeling back the plot from the bottom, one instruction at a time, to see what changes**. One useful adjustment to notice is the new call to the `scales` library to adjust the labels on the x-axis. The adjustment on the y-axis is `scales::percent` to convert the proportion to a percentage. On the x-axis, the issue is that several of the labels are rather long. If we do not adjust them they will print over one another. The `scales::wrap_format()` function will break long labels into lines. It takes a single numerical argument (here 10) that is the maxmimum length a string can be before it is wrapped onto a new line.
@@ -93,9 +93,7 @@ This plot has a few cosmetic details and adjustments that you can look up in Hea
 A graph like this is true to the categorical nature of the data, while showing the breakdown of groups within each year. But you should experiment with some alternatives. For example, we might decide that it is better to facet by degree category instead, and put the `year` on the x-axis within each panel. If we do that, then we can use `geom_line()` to show a time trend, which is more natural, and `geom_ribbon()` to show the error range. This is perhaps a better way to show the data, especially as it brings out the time trends within each degree category, and allows us to see the similarities and differences by racial classification at the same time. **Try to replicate the plot below too**.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE,fig.height = 12}
-out_grp %>% 
-  drop_na() %>%
-  ggplot(subset(out_grp, race %nin% "Other"),
+ggplot(subset(out_grp, race %nin% "Other"),
             mapping = aes(x = year, y = prop, ymin = prop - 2*prop_se,
                           ymax = prop + 2*prop_se, fill = race, color = race,
                           group = race)) +

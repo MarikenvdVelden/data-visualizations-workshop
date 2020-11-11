@@ -34,7 +34,7 @@ design information to calculate weighted estimates of the distribution
 of educational attainment by race, for selected survey years from 1976
 to 2016.
 
-To begin, we load the `survey` and `srvyr`
+To begin, we load the `survey`, `srvyr`, `tidyverse`, and `socviz`
 libraries.
 
 ``` r
@@ -83,7 +83,8 @@ series of years from 1976 to 2016. We use `survey_mean()` to do this:
 out_grp <- gss_wt %>%
     filter(year %in% seq(1976, 2016, by = 4)) %>%
     group_by(year, race, degree) %>%
-    summarize(prop = survey_mean(na.rm = TRUE))
+    summarize(prop = survey_mean(na.rm = TRUE)) %>%
+    drop_na()
 ```
 
 This gives us the numbers that we want and returns them in a tidy data
