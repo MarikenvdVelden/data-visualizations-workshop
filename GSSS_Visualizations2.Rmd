@@ -61,11 +61,11 @@ The call to `separate()` says to take the `racedeg` column, split each value whe
 
 Reasonable people can disagree over how best to plot a small multiple of a frequency table while faceting by year, especially when there is some measure of uncertainty attached. A barplot is the obvious approach for a single case, but when there are many years it can become difficult to compare bars across panels. This is especially the case when standard errors or confidence intervals are used in conjunction with bars. This is sometimes called a _dynamite plot_, not because it looks amazing but because the t-shaped error bars on the tops of the columns make them look like cartoon dynamite plungers. An alternative is to use a line graph to join up the time observations, faceting on educational categories instead of year. 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=12}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height = 12}
 library(ggplot2)
 dodge <- position_dodge(width=0.9)
 
-p <- ggplot(data = subset(out_grp, race %nin% "Other"),
+(p <- ggplot(data = subset(out_grp, race %nin% "Other"),
             mapping = aes(x = degree, y = prop,
                           ymin = prop - 2*prop_se,
                           ymax = prop + 2*prop_se,
@@ -85,16 +85,17 @@ p <- ggplot(data = subset(out_grp, race %nin% "Other"),
          x = NULL, y = "Percent") +
     facet_wrap(~ year, ncol = 2) +
     theme_bw() +
-    theme(legend.position = "top") 
-p
+    theme(legend.position = "top"))
 ```
 
 This plot has a few cosmetic details and adjustments that you can look up in Healy's book (Chapter 8). **Try to replicate the plot by peeling back the plot from the bottom, one instruction at a time, to see what changes**. One useful adjustment to notice is the new call to the `scales` library to adjust the labels on the x-axis. The adjustment on the y-axis is `scales::percent` to convert the proportion to a percentage. On the x-axis, the issue is that several of the labels are rather long. If we do not adjust them they will print over one another. The `scales::wrap_format()` function will break long labels into lines. It takes a single numerical argument (here 10) that is the maxmimum length a string can be before it is wrapped onto a new line.
 
 A graph like this is true to the categorical nature of the data, while showing the breakdown of groups within each year. But you should experiment with some alternatives. For example, we might decide that it is better to facet by degree category instead, and put the `year` on the x-axis within each panel. If we do that, then we can use `geom_line()` to show a time trend, which is more natural, and `geom_ribbon()` to show the error range. This is perhaps a better way to show the data, especially as it brings out the time trends within each degree category, and allows us to see the similarities and differences by racial classification at the same time. **Try to replicate the plot below too**.
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height = 12, fig.width= 5}
-ggplot(data = subset(out_grp, race %nin% "Other"),
+```{r echo=FALSE, warning=FALSE, message=FALSE,fig.height = 12}
+out_grp %>% 
+  drop_na() %>%
+  ggplot(subset(out_grp, race %nin% "Other"),
             mapping = aes(x = year, y = prop, ymin = prop - 2*prop_se,
                           ymax = prop + 2*prop_se, fill = race, color = race,
                           group = race)) +

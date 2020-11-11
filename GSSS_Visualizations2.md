@@ -226,7 +226,7 @@ lnd <- readOGR(dsn = "data", layer = "london_sport")
 ```
 
     ## OGR data source with driver: ESRI Shapefile 
-    ## Source: "/Users/marikenvandervelden/Dropbox/Desktop/GSSS/data", layer: "london_sport"
+    ## Source: "/Users/marikenvandervelden/Dropbox/Desktop/GSSS/data-visualizations-workshop/data", layer: "london_sport"
     ## with 33 features
     ## It has 4 fields
     ## Integer64 fields read as strings:  Pop_2001
